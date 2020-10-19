@@ -104,3 +104,4 @@ nodejs
 dotnet-runtime
 dotnet-sdk
 aspnet-runtime
+rsync
