@@ -94,3 +94,13 @@ wvdial
 xfsprogs
 xl2tpd
 zsh
+
+#custom packages
+ansible
+python
+docker
+docker-compose
+nodejs
+dotnet-runtime
+dotnet-sdk
+aspnet-runtime
