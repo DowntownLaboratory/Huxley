@@ -1,0 +1,7 @@
+root:x:0:root
+adm:x:4:ralcaraz,deet
+docker:x:971:ralcaraz,deet
+uucp:x:14:ralcaraz,deet
+wheel:x:10:ralcaraz,deet
+deet:x:1000:
+ralcaraz:x:1001:
