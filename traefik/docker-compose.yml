@@ -1,0 +1,88 @@
+version: "3.7"
+services:
+  ombi:
+    image: linuxserver/ombi
+    container_name: ombi
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - ${DOCKER_ROOT}/ombi:/config
+    ports:
+      - ${OMBI_PORT}:3579
+    restart: unless-stopped
+
+  sonarr:
+    image: linuxserver/sonarr
+    container_name: sonarr
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+        - ${DOCKER_ROOT}/sonarr:/config
+        - ${MEDIA_ROOT}/tv:/tv
+        - ${MEDIA_ROOT}/downloads:/downloads
+    ports:
+        - ${SONARR_PORT}:8989
+    restart: unless-stopped
+
+  radarr:
+    image: linuxserver/radarr
+    container_name: radarr
+    environment:
+        - PUID=${PUID}
+        - PGID=${PGID}
+        - TZ=${TZ}
+    volumes:
+      - ${DOCKER_ROOT}/radarr:/config
+      - ${MEDIA_ROOT}/movies:/movies
+      - ${MEDIA_ROOT}/downloads:/downloads
+    ports:
+      - ${RADARR_PORT}:7878
+    restart: unless-stopped
+    
+  jackett:
+    image: linuxserver/jackett
+    container_name: jackett
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - ${DOCKER_ROOT}/jackett:/config
+      - ${MEDIA_ROOT}/downloads:/downloads
+    ports:
+      - ${JACKETT_PORT}:9117
+    restart: unless-stopped
+
+  deluge:
+    image: linuxserver/deluge
+    container_name: deluge
+    network_mode: host
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      - UMASK_SET=002 #optional
+    volumes:
+      - ${DOCKER_ROOT}/deluge:/config
+      - ${MEDIA_ROOT}/downloads:/downloads
+    ports:
+      - ${DELUGE_PORT}:8112
+    restart: unless-stopped
+
+  sabnzbd:
+    image: linuxserver/sabnzbd
+    container_name: sabnzbd
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - ${DOCKER_ROOT}/sabnzbd:/config
+      - ${MEDIA_ROOT}/downloads:/downloads
+    ports:
+      - ${SABNZBD_PORT}:8080
+    restart: unless-stopped
