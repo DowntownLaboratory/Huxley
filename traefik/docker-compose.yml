@@ -1,88 +1,47 @@
-version: "3.7"
+version: "3.3"
+
 services:
-  ombi:
-    image: linuxserver/ombi
-    container_name: ombi
+  traefik:
+    image: "traefik:v2.3"
+    container_name: "traefik"
+    command:
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --providers.docker.network=web
+      - --api
+      #- --certificatesresolvers.le.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory
+      - --certificatesresolvers.le.acme.email=${ACME_EMAIL}
+      - --certificatesresolvers.le.acme.storage=/acme.json
+      - --certificatesresolvers.le.acme.httpchallenge=true
+      - --certificatesResolvers.le.acme.httpchallenge.entryPoint=web
     environment:
       - PUID=${PUID}
       - PGID=${PGID}
-      - TZ=${TZ}
-    volumes:
-      - ${DOCKER_ROOT}/ombi:/config
     ports:
-      - ${OMBI_PORT}:3579
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "/docker/traefik/acme.json:/acme.json"
     restart: unless-stopped
+    labels:
+      - traefik.http.routers.traefik.service=api@internal
+      - traefik.http.routers.traefik.tls.certresolver=le
+      - traefik.http.routers.traefik.entrypoints=websecure
+      # middleware redirect
+      - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
+      # global redirect to https
+      - traefik.http.routers.redirs.rule=hostregexp(`{host:.+}`)
+      - traefik.http.routers.redirs.entrypoints=web
+      - traefik.http.routers.redirs.middlewares=redirect-to-https
+    networks:
+     - web
 
-  sonarr:
-    image: linuxserver/sonarr
-    container_name: sonarr
-    environment:
-      - PUID=${PUID}
-      - PGID=${PGID}
-      - TZ=${TZ}
-    volumes:
-        - ${DOCKER_ROOT}/sonarr:/config
-        - ${MEDIA_ROOT}/tv:/tv
-        - ${MEDIA_ROOT}/downloads:/downloads
-    ports:
-        - ${SONARR_PORT}:8989
-    restart: unless-stopped
-
-  radarr:
-    image: linuxserver/radarr
-    container_name: radarr
-    environment:
-        - PUID=${PUID}
-        - PGID=${PGID}
-        - TZ=${TZ}
-    volumes:
-      - ${DOCKER_ROOT}/radarr:/config
-      - ${MEDIA_ROOT}/movies:/movies
-      - ${MEDIA_ROOT}/downloads:/downloads
-    ports:
-      - ${RADARR_PORT}:7878
-    restart: unless-stopped
-    
-  jackett:
-    image: linuxserver/jackett
-    container_name: jackett
-    environment:
-      - PUID=${PUID}
-      - PGID=${PGID}
-      - TZ=${TZ}
-    volumes:
-      - ${DOCKER_ROOT}/jackett:/config
-      - ${MEDIA_ROOT}/downloads:/downloads
-    ports:
-      - ${JACKETT_PORT}:9117
-    restart: unless-stopped
-
-  deluge:
-    image: linuxserver/deluge
-    container_name: deluge
-    network_mode: host
-    environment:
-      - PUID=${PUID}
-      - PGID=${PGID}
-      - TZ=${TZ}
-      - UMASK_SET=002 #optional
-    volumes:
-      - ${DOCKER_ROOT}/deluge:/config
-      - ${MEDIA_ROOT}/downloads:/downloads
-    ports:
-      - ${DELUGE_PORT}:8112
-    restart: unless-stopped
-
-  sabnzbd:
-    image: linuxserver/sabnzbd
-    container_name: sabnzbd
-    environment:
-      - PUID=${PUID}
-      - PGID=${PGID}
-      - TZ=${TZ}
-    volumes:
-      - ${DOCKER_ROOT}/sabnzbd:/config
-      - ${MEDIA_ROOT}/downloads:/downloads
-    ports:
-      - ${SABNZBD_PORT}:8080
-    restart: unless-stopped
+networks:
+  web:
+    external: true
+  internal:
+    external: false

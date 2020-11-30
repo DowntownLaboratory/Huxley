@@ -1,0 +1,109 @@
+version: "3.7"
+services:
+  ombi:
+    image: linuxserver/ombi
+    container_name: ombi
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    ports:
+      - ${OMBI_PORT}:3579
+    volumes:
+      - ${DOCKER_ROOT}/ombi:/config
+    restart: unless-stopped
+    labels:
+      - traefik.enable=true
+      - traefik.port=${OMBI_PORT}
+      - traefik.http.routers.ombi.rule=Host(`media.ricardoalcaraz.dev`)
+      - traefik.http.routers.ombi.tls.certresolver=le
+      - traefik.http.routers.ombi.entrypoints=websecure
+      - traefik.docker.network=web
+    networks:
+      - web
+      - media
+
+  sonarr:
+    image: linuxserver/sonarr
+    container_name: sonarr
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+        - ${DOCKER_ROOT}/sonarr:/config
+        - ${MEDIA_ROOT}/tv:/tv
+        - ${DL_DIR}:/downloads
+    ports:
+        - ${SONARR_PORT}:8989
+    restart: unless-stopped
+    networks:
+      - media
+  radarr:
+    image: linuxserver/radarr
+    container_name: radarr
+    environment:
+        - PUID=${PUID}
+        - PGID=${PGID}
+        - TZ=${TZ}
+    volumes:
+      - ${DOCKER_ROOT}/radarr:/config
+      - ${MEDIA_ROOT}/movies:/movies
+      - ${DL_DIR}:/downloads
+    ports:
+      - ${RADARR_PORT}:7878
+    restart: unless-stopped
+    networks:
+      - media
+
+  jackett:
+    image: linuxserver/jackett
+    container_name: jackett
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - ${DOCKER_ROOT}/jackett:/config
+      - ${DL_DIR}:/downloads
+    ports:
+      - ${JACKETT_PORT}:9117
+    restart: unless-stopped
+    networks:
+      - media
+
+  sabnzbd:
+    image: linuxserver/sabnzbd
+    container_name: sabnzbd
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - ${DOCKER_ROOT}/sabnzbd:/config
+      - ${DL_DIR}:/downloads
+      - ${DL_DIR}/incomplete-downloads:/incomplete-downloads #optional
+    ports:
+      - ${SABNZBD_PORT}:8080
+    restart: unless-stopped
+    networks:
+      - media
+
+  deluge:
+    image: linuxserver/deluge
+    container_name: deluge
+    network_mode: host
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      - UMASK_SET=002 #optional
+    volumes:
+      - ${DOCKER_ROOT}/deluge:/config
+      - ${DL_DIR}:/downloads
+    restart: unless-stopped
+
+networks:
+  web:
+    external: true
+  media:
