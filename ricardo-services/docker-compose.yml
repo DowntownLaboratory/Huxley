@@ -1,0 +1,28 @@
+#docker run -i -t -p 8888:8888 continuumio/anaconda3 /bin/bash -c "/opt/conda/bin/conda install jupyter -y --quiet && mkdir /opt/notebooks && /opt/conda/bin/jupyter notebook --notebook-dir=/opt/notebooks --ip='*' --port=8888 --no-browser"
+version: "3.7"
+services:
+  anaconda:
+    image: continuumio/anaconda3
+    container_name: anaconda
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+    ports:
+      - 8888:8888
+    volumes:
+      - /docker/anaconda:/opt/notebooks
+    restart: unless-stopped
+    command: /bin/bash -c "/opt/conda/bin/conda install jupyter -y --quiet && /opt/conda/bin/jupyter notebook --notebook-dir=/opt/notebooks --ip='*' --port=8888 --no-browser --allow-root" && sleep infinity
+    labels:
+      - traefik.enable=true
+      - traefik.port=8888
+      - traefik.http.routers.anaconda.rule=Host(`jupyter.ricardoalcaraz.dev`)
+      - traefik.http.routers.anaconda.tls.certresolver=le
+      - traefik.http.routers.anaconda.entrypoints=websecure
+      - traefik.docker.network=web
+    networks:
+      - web
+
+networks:
+  web:
+    external: true
