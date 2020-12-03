@@ -33,7 +33,7 @@ services:
     volumes:
         - ${DOCKER_ROOT}/sonarr:/config
         - ${MEDIA_ROOT}/tv:/tv
-        - ${DL_DIR}:/downloads
+        - ${DL_DIR}:/data
     ports:
         - ${SONARR_PORT}:8989
     restart: unless-stopped
@@ -49,7 +49,7 @@ services:
     volumes:
       - ${DOCKER_ROOT}/radarr:/config
       - ${MEDIA_ROOT}/movies:/movies
-      - ${DL_DIR}:/downloads
+      - ${DL_DIR}:/data
     ports:
       - ${RADARR_PORT}:7878
     restart: unless-stopped
@@ -65,7 +65,7 @@ services:
       - TZ=${TZ}
     volumes:
       - ${DOCKER_ROOT}/jackett:/config
-      - ${DL_DIR}:/downloads
+      - ${DL_DIR}:/data
     ports:
       - ${JACKETT_PORT}:9117
     restart: unless-stopped
@@ -81,8 +81,8 @@ services:
       - TZ=${TZ}
     volumes:
       - ${DOCKER_ROOT}/sabnzbd:/config
-      - ${DL_DIR}:/downloads
-      - ${DL_DIR}/incomplete-downloads:/incomplete-downloads #optional
+      - ${DL_DIR}:/data
+      - ${DL_DIR}/incomplete-downloads:/incomplete-downloads
     ports:
       - ${SABNZBD_PORT}:8080
     restart: unless-stopped
@@ -90,19 +90,44 @@ services:
       - media
 
   deluge:
-    image: linuxserver/deluge
+    image: binhex/arch-delugevpn
     container_name: deluge
-    network_mode: host
-    environment:
-      - PUID=${PUID}
-      - PGID=${PGID}
-      - TZ=${TZ}
-      - UMASK_SET=002 #optional
     volumes:
       - ${DOCKER_ROOT}/deluge:/config
-      - ${DL_DIR}:/downloads
+      - ${DL_DIR}:/data
+      - /etc/localtime:/etc/localtime:ro
     restart: unless-stopped
-
+    environment:
+      - OPENVPN_PROVIDER=PIA
+      - OPENVPN_CONFIG=ca_toronto
+      - OPENVPN_USERNAME=user
+      - OPENVPN_PASSWORD=pass
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - LAN=192.168.0.0/16
+      - VPN_ENABLED=yes
+      - VPN_USER=${VPN_USER}
+      - VPN_PASS=${VPN_PASS}
+      - VPN_PROV=custom
+      - VPN_CLIENT=openvpn
+      - STRICT_PORT_FORWARD=yes
+      - ENABLE_PRIVOXY=yes
+      - LAN_NETWORK=192.168.0.0/24
+      - NAME_SERVERS=209.222.18.222,84.200.69.80,37.235.1.174,1.1.1.1,209.222.18.218,37.235.1.177,84.200.70.40,1.0.0.1
+      - DELUGE_DAEMON_LOG_LEVEL=info
+      - DELUGE_WEB_LOG_LEVEL=info
+      - DEBUG=false
+      - UMASK=000
+    ports:
+      - "8112:8112"
+      - "8118:8118"
+      - "58846:58846"
+      - "58946:58946"
+    cap_add:
+      - NET_ADMIN
+    networks:
+      - media
+      
 networks:
   web:
     external: true
