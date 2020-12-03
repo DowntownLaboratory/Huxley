@@ -7,14 +7,15 @@ To https routing to your container add the following labels to your containers a
     labels:
       - traefik.enable=true
       - traefik.port=PORT_NUMBER
-      - traefik.http.routers.ombi.rule=Host(`example.com`)
-      - traefik.http.routers.ombi.tls.certresolver=le
-      - traefik.http.routers.ombi.entrypoints=websecure
+      - traefik.http.routers.containername.rule=Host(`example.com`)
+      - traefik.http.routers.containername.tls.certresolver=le
+      - traefik.http.routers.containername.entrypoints=websecure
       - traefik.docker.network=web
 Add the following network as well
     networks:
       - web
-
+      
+And finally the web network is an external network so define it as such
 networks:
   web:
     external: true
