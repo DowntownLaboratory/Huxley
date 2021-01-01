@@ -41,6 +41,42 @@ services:
     networks:
      - web
 
+  db:
+    container_name: postgres
+    image: postgres:13-alpine
+    restart: always
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    volumes:
+      - /docker/postgres:/var/lib/postgresql/data
+
+  pgadmin:
+    container_name: pgadmin
+    image: dpage/pgadmin4 
+    restart: always
+    ports:
+      - ":80"
+    volumes:
+      - /docker/pgadmin:/var/lib/pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+    labels:
+      - traefik.enable=true
+      - traefik.port=PORT_NUMBER
+      - traefik.http.routers.containername.rule=Host(`db.gonryun.com`)
+      - traefik.http.routers.containername.tls.certresolver=le
+      - traefik.http.routers.containername.entrypoints=websecure
+      - traefik.docker.network=web
+
 networks:
   web:
     external: true
