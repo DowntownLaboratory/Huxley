@@ -84,6 +84,8 @@ services:
     container_name: nats
     image: nats:latest
     command: "--auth ${NATS_TOKEN}"
+    networks:
+     - web
 
 networks:
   web:
