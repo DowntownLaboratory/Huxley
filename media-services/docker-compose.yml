@@ -16,7 +16,6 @@ services:
     restart: unless-stopped
     networks:
       - media
-      - bridge
 
   radarr:
     image: linuxserver/radarr
@@ -34,7 +33,6 @@ services:
     restart: unless-stopped
     networks:
       - media
-      - bridge
 
   jackett:
     image: linuxserver/jackett
@@ -51,7 +49,6 @@ services:
     restart: unless-stopped
     networks:
       - media
-      - bridge
 
   sabnzbd:
     image: linuxserver/sabnzbd
@@ -69,7 +66,6 @@ services:
     restart: unless-stopped
     networks:
       - media
-      - bridge
 
   deluge:
     image: lscr.io/linuxserver/deluge:latest
@@ -89,10 +85,6 @@ services:
     restart: unless-stopped
     networks:
       - media
-      - bridge
       
 networks:
-  bridge:
-    external: true
   media:
-    external: true
