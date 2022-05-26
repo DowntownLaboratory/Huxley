@@ -1,28 +1,5 @@
 version: "3.7"
 services:
-  ombi:
-    image: linuxserver/ombi
-    container_name: ombi
-    environment:
-      - PUID=${PUID}
-      - PGID=${PGID}
-      - TZ=${TZ}
-    ports:
-      - ${OMBI_PORT}:3579
-    volumes:
-      - ${DOCKER_ROOT}/ombi:/config
-    restart: unless-stopped
-    labels:
-      - traefik.enable=true
-      - traefik.port=${OMBI_PORT}
-      - traefik.http.routers.ombi.rule=Host(`media.ricardoalcaraz.dev`)
-      - traefik.http.routers.ombi.tls.certresolver=le
-      - traefik.http.routers.ombi.entrypoints=websecure
-      - traefik.docker.network=web
-    networks:
-      - web
-      - media
-
   sonarr:
     image: linuxserver/sonarr
     container_name: sonarr
@@ -33,13 +10,14 @@ services:
     volumes:
         - ${DOCKER_ROOT}/sonarr:/config
         - ${MEDIA_ROOT}/tv:/tv
-        - ${DL_DIR}:/data
         - ${DL_DIR}:/downloads
     ports:
         - ${SONARR_PORT}:8989
     restart: unless-stopped
     networks:
       - media
+      - bridge
+
   radarr:
     image: linuxserver/radarr
     container_name: radarr
@@ -50,13 +28,13 @@ services:
     volumes:
       - ${DOCKER_ROOT}/radarr:/config
       - ${MEDIA_ROOT}/movies:/movies
-      - ${DL_DIR}:/data
       - ${DL_DIR}:/downloads
     ports:
       - ${RADARR_PORT}:7878
     restart: unless-stopped
     networks:
       - media
+      - bridge
 
   jackett:
     image: linuxserver/jackett
@@ -67,12 +45,13 @@ services:
       - TZ=${TZ}
     volumes:
       - ${DOCKER_ROOT}/jackett:/config
-      - ${DL_DIR}:/data
+      - ${DL_DIR}:/downloads
     ports:
       - ${JACKETT_PORT}:9117
     restart: unless-stopped
     networks:
       - media
+      - bridge
 
   sabnzbd:
     image: linuxserver/sabnzbd
@@ -83,15 +62,37 @@ services:
       - TZ=${TZ}
     volumes:
       - ${DOCKER_ROOT}/sabnzbd:/config
-      - ${DL_DIR}:/data
+      - ${DL_DIR}:/downloads
       - ${DL_DIR}/incomplete:/incomplete-downloads
     ports:
       - ${SABNZBD_PORT}:8080
     restart: unless-stopped
     networks:
       - media
+      - bridge
+
+  deluge:
+    image: lscr.io/linuxserver/deluge:latest
+    container_name: deluge
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      - DELUGE_LOGLEVEL=error #optional
+    volumes:
+      - ${DOCKER_ROOT}/deluge:/config
+      - ${DL_DIR}:/downloads
+    ports:
+      - ${DELUGE_PORT}:8112
+      - 6881:6881
+      - 6881:6881/udp
+    restart: unless-stopped
+    networks:
+      - media
+      - bridge
       
 networks:
-  web:
+  bridge:
     external: true
   media:
+    external: true
