@@ -1,7 +1,7 @@
 version: "3.7"
 services:
   sonarr:
-    image: linuxserver/sonarr
+    image: lscr.io/linuxserver/sonarr
     container_name: sonarr
     environment:
       - PUID=${PUID}
@@ -18,7 +18,7 @@ services:
       - media
 
   radarr:
-    image: linuxserver/radarr
+    image: lscr.io/linuxserver/radarr
     container_name: radarr
     environment:
         - PUID=${PUID}
@@ -35,7 +35,7 @@ services:
       - media
 
   jackett:
-    image: linuxserver/jackett
+    image: lscr.io/linuxserver/jackett
     container_name: jackett
     environment:
       - PUID=${PUID}
@@ -51,7 +51,7 @@ services:
       - media
 
   sabnzbd:
-    image: linuxserver/sabnzbd
+    image: lscr.io/linuxserver/sabnzbd
     container_name: sabnzbd
     environment:
       - PUID=${PUID}
@@ -85,6 +85,22 @@ services:
     restart: unless-stopped
     networks:
       - media
-      
+
+  plex:
+    image: lscr.io/linuxserver/plex:latest
+    container_name: plex
+    network_mode: host
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      - VERSION=docker
+      - PLEX_CLAIM=claim-G2cXQyVvHzobc5QLC_Kt
+    volumes:
+      - ${DOCKER_ROOT}/plex:/config
+      - ${MEDIA_ROOT}/tv:/tv
+      - ${MEDIA_ROOT}/movies:/movies
+    restart: unless-stopped
+
 networks:
   media:
