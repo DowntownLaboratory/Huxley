@@ -95,7 +95,7 @@ services:
       - PGID=${PGID}
       - TZ=${TZ}
       - VERSION=docker
-      - PLEX_CLAIM=claim-G2cXQyVvHzobc5QLC_Kt
+      - PLEX_CLAIM=
     volumes:
       - ${DOCKER_ROOT}/plex:/config
       - ${MEDIA_ROOT}/tv:/tv
